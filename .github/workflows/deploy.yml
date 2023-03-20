@@ -23,7 +23,7 @@ jobs:
       - name: Build
         if: ${{ !env.ACT }}
         run: |
-          npm i -g @vercel/ncc
+          npm install
           npm run build
         
       - name: Commit and push if changed
