@@ -65,13 +65,12 @@ function getTasks({ commitMsg, jiraPrefixes, jiraBrowseUrl}) {
   let final = ""
   let prefixes = ""
   if (commitMsg) {
-    tasks = commitMsg.match(/\S[^#]*?(\d+)/g)
+    tasks = commitMsg.match(/[A-Z]+-\d+/g)
   }
   if (jiraPrefixes) {
     prefixes = jiraPrefixes.replace(/\s/g, "").split(',')
   }
   if (tasks && tasks.length > 0) {
-    tasks = tasks.map(task => task.slice(1))
     final += "[ "
     tasks.forEach(task => {
       if (prefixes && prefixes.some(pre => task.includes(pre))) {
