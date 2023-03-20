@@ -14,6 +14,7 @@ This GitHub Action automatically generates a changelog based on all the [Convent
 
 - Generates the CHANGELOG changes in Markdown format
 - Turns PR ids into links and add the PR author.
+- Turns Jira ids into links.
 - Prepends a shortened commit SHA ID to the commit for quick access.
 - `BREAKING CHANGE` notes are added to the top of the changelog version along with the related commit.
 - Exports changelog to a variable that can used in a subsequent step to create a release changelog.
@@ -44,8 +45,10 @@ jobs:
 
       - name: Update CHANGELOG
         id: changelog
-        uses: requarks/changelog-action@v1
+        uses: 58ielaay0/changelog-action@v1
         with:
+          jiraBrowseUrl: # Url to jira, e.g. "https://jira.example.com/browse"
+          jiraPrefixes: 'EPIC, TEST'
           token: ${{ github.token }}
           tag: ${{ github.ref_name }}
 
@@ -128,6 +131,8 @@ jobs:
 | `useGitmojis` | Should type headers be prepended with their related gitmoji | :x: | `true` |
 | `includeInvalidCommits` | Whether to include commits that don't respect the Conventional Commits format | :x: | `false` |
 | `reverseOrder` | List commits in reverse order (from newer to older) instead of the default (older to newer). | :x: | `false` |
+| `jiraBrowseUrl` | Jira browse url you want the issues to be linked to  (e.g https://jira.example.com/browse ) | :x: | |
+| `jiraPrefixes` | 'SL, SBKRESP, LPS : If you want to specify which issues that should be shown | :white_check_mark: <br> *(unless using `jiraBrowseUrl`)* | |
 
 ## Outputs
 
