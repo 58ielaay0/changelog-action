@@ -13,6 +13,12 @@ jobs:
         if: ${{ !env.ACT }}
         with:
           fetch-depth: 0
+        
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        if: ${{ !env.ACT }}
+        with:
+          node-version: 16
           
       - name: Build
         if: ${{ !env.ACT }}
