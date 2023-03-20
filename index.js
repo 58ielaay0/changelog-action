@@ -8,9 +8,10 @@ const { setTimeout } = require('timers/promises')
 const types = [
   { types: ['feat', 'feature'], header: 'New Features', icon: ':sparkles:' },
   { types: ['fix', 'bugfix'], header: 'Bug Fixes', icon: ':bug:', relIssuePrefix: 'fixes' },
-  { types: ['perf'], header: 'Performance Improvements', icon: ':zap:' },
+  { types: ['perf'], header: 'Performance Improvements', icon: ':dizzy:' },
+  { types: ['impr'], header: 'Improvements', icon: ':zap:': },
   { types: ['refactor'], header: 'Refactors', icon: ':recycle:' },
-  { types: ['test', 'tests'], header: 'Tests', icon: ':white_check_mark:' },
+  { types: ['test', 'tests'], header: 'Tests', icon: ':alembic:' },
   { types: ['build', 'ci'], header: 'Build System', icon: ':construction_worker:' },
   { types: ['doc', 'docs'], header: 'Documentation Changes', icon: ':memo:' },
   { types: ['style'], header: 'Code Style Changes', icon: ':art:' },
@@ -59,6 +60,33 @@ function buildSubject ({ writeToFile, subject, author, authorUrl, owner, repo })
   }
 }
 
+function getTasks({ commitMsg, jiraPrefixes, jiraBrowseUrl}) {
+  let tasks = []
+  let final = ""
+  let prefixes = ""
+  if (commitMsg) {
+    tasks = commitMsg.match(/\S[^#]*?(\d+)/g)
+  }
+  if (jiraPrefixes) {
+    prefixes = jiraPrefixes.replace(/\s/g, "").split(',')
+  }
+  if (tasks && tasks.length > 0) {
+    tasks = tasks.map(task => task.slice(1))
+    final += "[ "
+    tasks.forEach(task => {
+      if (prefixes && prefixes.some(pre => task.includes(pre))) {
+        core.info(`Tasks with prefix: ${tasks}`)
+        final += `[${task}](${jiraBrowseUrl}/${task}) `
+      } else if (!jiraPrefixes) {
+        core.info(`Tasks: ${tasks}`)
+        final += `[${task}](${jiraBrowseUrl}/${task}) `
+      }
+    })
+    final += "]"
+  }
+  return final
+}
+
 async function main () {
   const token = core.getInput('token')
   const tag = core.getInput('tag')
@@ -68,6 +96,8 @@ async function main () {
   const writeToFile = core.getBooleanInput('writeToFile')
   const includeRefIssues = core.getBooleanInput('includeRefIssues')
   const useGitmojis = core.getBooleanInput('useGitmojis')
+  const jiraPrefixes = core.getInput('jiraPrefixes')
+  const jiraBrowseUrl = core.getInput('jiraBrowseUrl')
   const includeInvalidCommits = core.getBooleanInput('includeInvalidCommits')
   const reverseOrder = core.getBooleanInput('reverseOrder')
   const gh = github.getOctokit(token)
@@ -75,6 +105,9 @@ async function main () {
   const repo = github.context.repo.repo
   const currentISODate = (new Date()).toISOString().substring(0, 10)
 
+  core.info('JiraPrefixes: ' + jiraPrefixes)
+  core.info('jiraBrowseUrl: ' + jiraBrowseUrl)
+  
   let latestTag = null
   let previousTag = null
 
@@ -173,7 +206,8 @@ async function main () {
         sha: commit.sha,
         url: commit.html_url,
         author: _.get(commit, 'author.login'),
-        authorUrl: _.get(commit, 'author.html_url')
+        authorUrl: _.get(commit, 'author.html_url'),
+        message: commit.commit.message
       })
       for (const note of cAst.notes) {
         if (note.title === 'BREAKING CHANGE') {
@@ -187,7 +221,7 @@ async function main () {
           })
         }
       }
-      core.info(`[OK] Commit ${commit.sha} of type ${cAst.type} - ${cAst.subject}`)
+      core.info(`[OK] Commit ${commit.sha} of type ${cAst.type} - ${cAst.subject} - ${cAst.body}`)
     } catch (err) {
       if (includeInvalidCommits) {
         commitsParsed.push({
@@ -281,8 +315,18 @@ async function main () {
         owner,
         repo
       })
-      changesFile.push(`- [\`${commit.sha.substring(0, 7)}\`](${commit.url}) - ${scope}${subjectFile.output}`)
-      changesVar.push(`- [\`${commit.sha.substring(0, 7)}\`](${commit.url}) - ${scope}${subjectVar.output}`)
+      
+      let tasks = undefined
+      if (jiraBrowseUrl) {
+        tasks = getTasks({
+          commitMsg: commit.message,
+          jiraPrefixes,
+          jiraBrowseUrl
+        })
+      }
+      
+      changesFile.push(`- [\`${commit.sha.substring(0, 7)}\`](${commit.url}) - ${scope}${subjectFile.output}${tasks}`)
+      changesVar.push(`- [\`${commit.sha.substring(0, 7)}\`](${commit.url}) - ${scope}${subjectVar.output}${tasks}`)
 
       if (includeRefIssues && subjectVar.prs.length > 0) {
         for (const prId of subjectVar.prs) {
