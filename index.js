@@ -68,6 +68,10 @@ function getTasks({ commitMsg, jiraPrefixes, jiraBrowseUrl}) {
     tasks = commitMsg.match(/[A-Z]+-\d+/g)
   }
   
+  if (jiraPrefixes) {
+    prefixes = jiraPrefixes.replace(/\s/g, "").split(',')
+  }
+  
   if (tasks && tasks.length > 0) {
     final += "[ "
     tasks.forEach(task => {
@@ -107,10 +111,6 @@ async function main () {
   
   let latestTag = null
   let previousTag = null
-  
-  if (jiraPrefixes) {
-    jiraPrefixes = jiraPrefixes.replace(/\s/g, "").split(',')
-  }
 
   if (tag && (fromTag || toTag)) {
     return core.setFailed(`Must provide EITHER input tag OR (fromTag and toTag), not both!`)
@@ -300,9 +300,13 @@ async function main () {
 
     for (const commit of matchingCommits) {
       
-      for (const prefix of jiraPrefixes) { //remove jira reference from commit message
-        var regex = new RegExp(prefix + "-\\d+ ", "g");
-        commit.subject = commit.subject.replace(regex, "");
+      //remove jira reference from commit message
+      if (jiraPrefixes) { 
+        var prefixes = jiraPrefixes.replace(/\s/g, "").split(',')
+        for (const prefix of prefixes) { 
+          var regex = new RegExp(prefix + "-\\d+ ", "g");
+          commit.subject = commit.subject.replace(regex, "");
+        }
       }
       
       const scope = commit.scope ? `**${commit.scope}**: ` : ''
