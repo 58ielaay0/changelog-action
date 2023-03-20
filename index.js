@@ -9,7 +9,7 @@ const types = [
   { types: ['feat', 'feature'], header: 'New Features', icon: ':sparkles:' },
   { types: ['fix', 'bugfix'], header: 'Bug Fixes', icon: ':bug:', relIssuePrefix: 'fixes' },
   { types: ['perf'], header: 'Performance Improvements', icon: ':dizzy:' },
-  { types: ['impr'], header: 'Improvements', icon: ':zap:': },
+  { types: ['impr'], header: 'Improvements', icon: ':zap:' },
   { types: ['refactor'], header: 'Refactors', icon: ':recycle:' },
   { types: ['test', 'tests'], header: 'Tests', icon: ':alembic:' },
   { types: ['build', 'ci'], header: 'Build System', icon: ':construction_worker:' },
