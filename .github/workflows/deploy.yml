@@ -52,6 +52,6 @@ jobs:
           allowUpdates: true
           draft: false
           makeLatest: true
-          tag: ${{ steps.semver.outputs.nextStrict }}
+          tag:  ${{ steps.semver.outputs.next }}
           name: ${{ steps.semver.outputs.next }}
           token: ${{ github.token }}
