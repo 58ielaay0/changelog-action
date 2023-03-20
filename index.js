@@ -67,9 +67,7 @@ function getTasks({ commitMsg, jiraPrefixes, jiraBrowseUrl}) {
   if (commitMsg) {
     tasks = commitMsg.match(/[A-Z]+-\d+/g)
   }
-  if (jiraPrefixes) {
-    prefixes = jiraPrefixes.replace(/\s/g, "").split(',')
-  }
+  
   if (tasks && tasks.length > 0) {
     final += "[ "
     tasks.forEach(task => {
@@ -109,6 +107,10 @@ async function main () {
   
   let latestTag = null
   let previousTag = null
+  
+  if (jiraPrefixes) {
+    jiraPrefixes = jiraPrefixes.replace(/\s/g, "").split(',')
+  }
 
   if (tag && (fromTag || toTag)) {
     return core.setFailed(`Must provide EITHER input tag OR (fromTag and toTag), not both!`)
@@ -297,6 +299,12 @@ async function main () {
     const relIssuePrefix = type.relIssuePrefix || 'addresses'
 
     for (const commit of matchingCommits) {
+      
+      for (const prefix of jiraPrefixes) { //remove jira reference from commit message
+        var regex = new RegExp(prefix + "-\\d+ ", "g");
+        commit.subject = commit.subject.replace(regex, "");
+      }
+      
       const scope = commit.scope ? `**${commit.scope}**: ` : ''
       const subjectFile = buildSubject({
         writeToFile: true,
@@ -324,8 +332,8 @@ async function main () {
         })
       }
       
-      changesFile.push(`- [\`${commit.sha.substring(0, 7)}\`](${commit.url}) - ${scope}${subjectFile.output}${tasks}`)
-      changesVar.push(`- [\`${commit.sha.substring(0, 7)}\`](${commit.url}) - ${scope}${subjectVar.output}${tasks}`)
+      changesFile.push(`- [\`${commit.sha.substring(0, 7)}\`](${commit.url}) - ${scope}${subjectFile.output} ${tasks}`)
+      changesVar.push(`- [\`${commit.sha.substring(0, 7)}\`](${commit.url}) - ${scope}${subjectVar.output} ${tasks}`)
 
       if (includeRefIssues && subjectVar.prs.length > 0) {
         for (const prId of subjectVar.prs) {
