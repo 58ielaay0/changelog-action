@@ -17,11 +17,17 @@ inputs:
   excludeTypes:
     description: Types to exclude from the Changelog
     required: false
-    default: build,docs,other,style
+    default: build,ci,other,style,ci
   writeToFile:
     description: Should CHANGELOG.md be updated with latest changelog
     required: false
     default: 'true'
+  jiraPrefixes:
+    description: Jira prefixes to use for issue references (e.g. EPIC, TEST)
+    required: false
+  jiraBrowseUrl:
+    description: Jira browse url
+    required: false
   includeRefIssues:
     description: Should the changelog include the issues referenced for each PR.
     required: false
