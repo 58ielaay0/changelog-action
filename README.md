@@ -143,4 +143,3 @@ jobs:
 ## :warning: Important :warning:
 
 You must already have 2 tags in your repository (1 previous tag + the current latest tag triggering the job). The job will exit with an error if it can't find the previous tag!
-
