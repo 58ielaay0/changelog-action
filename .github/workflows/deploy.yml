@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         if: ${{ !env.ACT }}
         with:
           fetch-depth: 0
@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-node@v3
         if: ${{ !env.ACT }}
         with:
-          node-version: 16
+          node-version: 20
           
       - name: Build
         if: ${{ !env.ACT }}
