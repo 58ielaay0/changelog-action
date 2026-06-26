@@ -22,10 +22,21 @@ const types = [
 const rePrId = /#([0-9]+)/g
 const rePrEnding = /\(#([0-9]+)\)$/
 
-function buildSubject ({ writeToFile, subject, author, authorUrl, owner, repo }) {
+function collectGitHubReferences (text, owner, repo, refsSet) {
+  if (!text) return
+  for (const match of text.matchAll(rePrId)) {
+    const id = match[1]
+    refsSet.add(`${owner}/${repo}#${id}`)
+  }
+}
+
+function buildSubject ({ writeToFile, subject, author, authorUrl, owner, repo, refsSet }) {
   const hasPR = rePrEnding.test(subject)
   const prs = []
   let output = subject
+  if (refsSet) {
+    collectGitHubReferences(subject, owner, repo, refsSet)
+  }
   if (writeToFile) {
     const authorLine = author ? ` by [@${author}](${authorUrl})` : ''
     if (hasPR) {
@@ -252,6 +263,7 @@ async function main () {
 
   const changesFile = []
   const changesVar = []
+  const githubReferences = new Set()
   let idx = 0
 
   if (breakingChanges.length > 0) {
@@ -265,7 +277,8 @@ async function main () {
         author: breakChange.author,
         authorUrl: breakChange.authorUrl,
         owner,
-        repo
+        repo,
+        refsSet: githubReferences
       })
       const subjectVar = buildSubject({
         writeToFile: false,
@@ -273,7 +286,8 @@ async function main () {
         author: breakChange.author,
         authorUrl: breakChange.authorUrl,
         owner,
-        repo
+        repo,
+        refsSet: githubReferences
       })
       changesFile.push(`- due to [\`${breakChange.sha.substring(0, 7)}\`](${breakChange.url}) - ${subjectFile.output}:\n\n${body}\n`)
       changesVar.push(`- due to [\`${breakChange.sha.substring(0, 7)}\`](${breakChange.url}) - ${subjectVar.output}:\n\n${body}\n`)
@@ -316,7 +330,8 @@ async function main () {
         author: commit.author,
         authorUrl: commit.authorUrl,
         owner,
-        repo
+        repo,
+        refsSet: githubReferences
       })
       const subjectVar = buildSubject({
         writeToFile: false,
@@ -324,7 +339,8 @@ async function main () {
         author: commit.author,
         authorUrl: commit.authorUrl,
         owner,
-        repo
+        repo,
+        refsSet: githubReferences
       })
       
       let tasks = undefined
@@ -367,6 +383,7 @@ async function main () {
           const relIssues = _.get(issuesRaw, 'repository.pullRequest.closingIssuesReferences.nodes')
           for (const relIssue of relIssues) {
             const authorLogin = _.get(relIssue, 'author.login')
+            githubReferences.add(`${owner}/${repo}#${relIssue.number}`)
             if (authorLogin) {
               changesFile.push(`  - :arrow_lower_right: *${relIssuePrefix} issue [#${relIssue.number}](${relIssue.url}) opened by [@${authorLogin}](${relIssue.author.url})*`)
               changesVar.push(`  - :arrow_lower_right: *${relIssuePrefix} issue #${relIssue.number} opened by @${authorLogin}*`)
@@ -389,6 +406,7 @@ async function main () {
   }
 
   core.setOutput('changes', changesVar.join('\n'))
+  core.setOutput('references', Array.from(githubReferences).join(';'))
 
   if (!writeToFile) { return }
 
