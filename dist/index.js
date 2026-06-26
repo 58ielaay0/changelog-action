@@ -50080,7 +50080,7 @@ function collectGitHubReferences (text, owner, repo, refsSet) {
   if (!text) return
   for (const match of text.matchAll(rePrId)) {
     const id = match[1]
-    refsSet.add(`${owner}/${repo}#${id}`)
+    refsSet.add(`${owner}/${repo}/${id}`)
   }
 }
 
@@ -50437,7 +50437,7 @@ async function main () {
           const relIssues = _.get(issuesRaw, 'repository.pullRequest.closingIssuesReferences.nodes')
           for (const relIssue of relIssues) {
             const authorLogin = _.get(relIssue, 'author.login')
-            githubReferences.add(`${owner}/${repo}#${relIssue.number}`)
+            githubReferences.add(`${owner}/${repo}/${relIssue.number}`)
             if (authorLogin) {
               changesFile.push(`  - :arrow_lower_right: *${relIssuePrefix} issue [#${relIssue.number}](${relIssue.url}) opened by [@${authorLogin}](${relIssue.author.url})*`)
               changesVar.push(`  - :arrow_lower_right: *${relIssuePrefix} issue #${relIssue.number} opened by @${authorLogin}*`)
