@@ -139,7 +139,7 @@ jobs:
 | Field | Description |
 |-------|-------------|
 | `changes` | Generated CHANGELOG changes for the latest tag, without the version / date header *(for use in GitHub Releases)*. |
-| `references` | List of issues included in changelog in format : owner/repo#1212;owner/repo#454;owner/repo#4141 |
+| `references` | List of issues included in changelog in format : owner/repo/1212;owner/repo/454;owner/repo/4141 |
 
 ## :warning: Important :warning:
 
