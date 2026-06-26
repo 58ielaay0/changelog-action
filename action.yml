@@ -45,10 +45,12 @@ inputs:
     required: false
     default: 'false'
 outputs:
-  changelog:
+  changes:
     description: Generated changelog
+  references:
+    description: List of issues included in changelog in format : owner/repo#1212;owner/repo#454;owner/repo#4141
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'
 branding:
   icon: wind
